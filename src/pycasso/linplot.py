@@ -8,9 +8,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from functools import wraps
 from loguru import logger
-from io import BytesIO
-from PIL import Image
-import win32clipboard
 
 SOLID_MARKERS = ('o','s','v','X','D','p')
 THIN_MARKERS = (',','1','+','x','|')
@@ -309,34 +306,9 @@ def horizontal(xs: np.ndarray, height: float,
 
 #########################
 
-def copy_axes_to_clipboard(fig):
-    original_size = fig.get_size_inches()
-    # Create an in-memory buffer to store the image
-    buffer = BytesIO()
-
-    # Save the figure to the buffer with tight bounding box to remove whitespace
-    fig.savefig(buffer, format='png', bbox_inches='tight', pad_inches=0.1)
-    buffer.seek(0)
-
-    # Restore the original figure size
-    fig.set_size_inches(original_size)
-
-    # Load the image using Pillow
-    image = Image.open(buffer)
-
-    # Copy the image to the clipboard (Windows-specific)
-    output = BytesIO()
-    image.convert("RGB").save(output, "BMP")
-    data = output.getvalue()[14:]  # Skip the BMP header
-    output.close()
-
-    # Open the clipboard and copy the image
-    win32clipboard.OpenClipboard()
-    win32clipboard.EmptyClipboard()
-    win32clipboard.SetClipboardData(win32clipboard.CF_DIB, data)
-    win32clipboard.CloseClipboard()
-
-    logger.info("Image copied to clipboard.")
+def copy_axes_to_clipboard(fig) -> None:
+    logger.warning(f'Clipboard functionality not yet implemented')
+    return None
 
 
 @temprary_settings
