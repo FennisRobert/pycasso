@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pycasso",
-    version="0.1.1",
+    version="0.1.2",
     description="A description of your library",
     author="Your Name",
     author_email="your.email@example.com",
