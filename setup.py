@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="pycasso",
-    version="0.1.4",
+    name="pyescher",
+    version="0.1.0",
     description="A description of your library",
     author="Your Name",
     author_email="your.email@example.com",
@@ -22,5 +22,5 @@ setup(
 
     # ✅ Include non-Python files if needed
     include_package_data=True,
-    package_data={"pycasso": ["*.txt", "*.csv"]},  # Adjust if needed
+    package_data={"pyescher": ["*.txt", "*.csv"]},  # Adjust if needed
 )

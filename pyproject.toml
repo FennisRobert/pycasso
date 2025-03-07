@@ -1,6 +1,6 @@
 [project]
-name = "pycasso"
-version = "0.1.4"
+name = "pyescher"
+version = "0.1.0"
 authors = [
   { name="Robert Fennis", email="fennisrobert@gmail.com" },
 ]
@@ -25,8 +25,8 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project.urls]
-Homepage = "https://github.com/FennisRobert/pycasso"
-Issues = "https://github.com/FennisRobert/pycasso/issues"
+Homepage = "https://github.com/FennisRobert/pyescher"
+Issues = "https://github.com/FennisRobert/pyescher/issues"
 
 
 [[tool.uv.index]]
