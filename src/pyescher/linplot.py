@@ -81,13 +81,21 @@ DEFAULT_COLOR_DEFINITIONS = ColorDefinitions()
 ############## CLASSES
 
 class PlotObject:
-    
+    MAX_SIZE = 1e30
+
     @property
     def y(self) -> np.ndarray:
+        # Returns all numbers and clips the data to the plot objects limits
+        # Also removes nan values by replacing them with zeros
         if self._transformation is None:
-            return self._y
+            
+            return np.nan_to_num(np.clip(self._y, -self.MAX_SIZE, self.MAX_SIZE))
         else:
-            return self._transformation(self._y)
+            return np.nan_to_num(np.clip(self._transformation(self._y), -self.MAX_SIZE, self.MAX_SIZE))
+    
+    @property
+    def x(self) -> np.ndarray:
+        return np.clip(self._x, -self.MAX_SIZE, self.MAX_SIZE)
     
     def __add__(self, other: PlotObject) -> PlotObject:
         if not isinstance(other, PlotObject):
@@ -135,7 +143,7 @@ class Line(PlotObject):
                  linestyle: str = None,
                  color: tuple[float,float,float,float] = None,
                  marker: str = None,
-                 markersize: float = 8,
+                 marker_size: float = 8,
                  width: float = 1.5,
                  label: str = NOLEGEND,
                  transformation: Callable = None):
@@ -143,8 +151,8 @@ class Line(PlotObject):
         self._y: np.ndarray = ydata
         self._ls: str = linestyle
         self._col: tuple[float,float,float,float] = color
-        self._mark: str = marker
-        self._mark_size: float = markersize
+        self._marker: str = marker
+        self._marker_size: float = marker_size
         self._width: float = width
         self._label: str = label
         self._transformation: Callable = transformation
@@ -158,8 +166,8 @@ class Line(PlotObject):
                 ):
         self._ls: str = linestyle
         self._col: tuple[float,float,float,float] = color
-        self._mark: str = marker
-        self._mark_size: float = markersize
+        self._marker: str = marker
+        self._marker_size: float = markersize
         self._width: float = width
 
 class Scatter(PlotObject):
@@ -245,7 +253,7 @@ class StyleCycler(PropertyCycler):
         self.cycle_period: int = None
 
 class MarkerCycler(PropertyCycler):
-    property = '_mark'
+    property = '_marker'
     def __init__(self):
         super().__init__()
         self.default_properties: list[str] = SOLID_MARKERS
@@ -315,6 +323,7 @@ def copy_axes_to_clipboard(fig) -> None:
 def plot_lines(*plotobjects: list[PlotObject], 
                xlabel: str = 'x-ax',
                ylabel: str = 'y-ax',
+               title: str = None,
                xlim: tuple[float, float] = None,
                ylim: tuple[float, float] = None,
                xmin: float = None,
@@ -337,7 +346,7 @@ def plot_lines(*plotobjects: list[PlotObject],
                filename: str = None,
                display: bool = True,
                size: Literal['normal','small','wide','narrow','thin','sliver'] = 'normal',
-               clipboard: bool = False):
+               clipboard: bool = False,):
 
     fig, ax = plt.subplots(1,1)
 
@@ -349,7 +358,7 @@ def plot_lines(*plotobjects: list[PlotObject],
 
     for line in lines:
         line.set_default(color=linecolor,
-                 markersize=marker_size)
+                 marker_size=marker_size)
         
 
     ### COLOR SETUP
@@ -378,10 +387,10 @@ def plot_lines(*plotobjects: list[PlotObject],
 
     for line in lines:
         
-        pxmin = min(pxmin, min(line._x))
-        pxmax = max(pxmax, max(line._x))
-        pymin = min(pymin, min(line.y))
-        pymax = max(pymax, max(line.y))
+        pxmin = min(pxmin, np.min(line._x))
+        pxmax = max(pxmax, np.max(line._x))
+        pymin = min(pymin, np.min(line.y))
+        pymax = max(pymax, np.max(line.y))
 
 
         if nmarkers is None:
@@ -390,12 +399,11 @@ def plot_lines(*plotobjects: list[PlotObject],
             markevery = len(line)//nmarkers
             
         marker = DEFAULT_MARKER_CYCLER.get()
-        logger.debug(f'Marker = {marker}')
         marker_style = dict(
             marker=marker,
             markeredgewidth=marker_edge_width,
             markeredgecolor=ColorDefinitions.interpret(DEFAULT_MARKER_EDGE_COLOR_CYCLER.get()),
-            markersize=line._mark_size,
+            markersize=line._marker_size,
             markerfacecolor=ColorDefinitions.interpret(DEFAULT_MARKER_COLOR_CYCLER.get()),
             markevery=markevery,
         )
@@ -419,10 +427,10 @@ def plot_lines(*plotobjects: list[PlotObject],
 
     for line in scatters:
         
-        pxmin = min(pxmin, min(line._x))
-        pxmax = max(pxmax, max(line._x))
-        pymin = min(pymin, min(line.y))
-        pymax = max(pymax, max(line.y))
+        pxmin = min(pxmin, np.min(line._x))
+        pxmax = max(pxmax, np.max(line._x))
+        pymin = min(pymin, np.min(line.y))
+        pymax = max(pymax, np.max(line.y))
             
         color = ColorDefinitions.interpret(DEFAULT_COLOR_CYCLER.get())
         ax.scatter(line._x, line.y, 
@@ -461,6 +469,9 @@ def plot_lines(*plotobjects: list[PlotObject],
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
 
+    if title is not None:
+        ax.set_title(title)
+
     ax.legend([line._label for line in lines], frameon=True, framealpha=1, edgecolor="black", facecolor="white")
 
     A4_width, A4_height = 8.27, 11.69  # A4 size in inches
@@ -479,7 +490,6 @@ def plot_lines(*plotobjects: list[PlotObject],
     fig.set_size_inches(figsize)
 
     if clipboard:
-        logger.info('Figure stored to clipboard')
         copy_axes_to_clipboard(fig)
 
     if filename is not None:
