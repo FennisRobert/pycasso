@@ -205,6 +205,10 @@ class PropertyCycler:
             self._active_cycler_data = self.default_properties[:self.cycle_period]
         else:
             self._active_cycler_data = self.default_properties
+
+        if not self.cycle:
+            self._active_cycler_data = [self.default,]
+
         self.reset_cycle()
 
     def set_default(self, properties: list) -> None:
@@ -225,11 +229,8 @@ class PropertyCycler:
         self.active_cycler = cycle(content)
         
     def get(self):
-        if self.cycle == True:
-            return next(self.active_cycler)
-        else:
-            return self.default
-
+        return next(self.active_cycler)
+        
 class ColorCycler(PropertyCycler):
     property = '_col'
     def __init__(self):

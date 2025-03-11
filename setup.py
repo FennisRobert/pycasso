@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pyescher",
-    version="0.2.0",
+    version="0.2.1",
     description="A Matplotlib wrapper that easily generates very scientific looking plots",
     author="Robert Fennis",
     author_email="fennisrobert@gmail.com",
